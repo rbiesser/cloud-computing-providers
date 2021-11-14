@@ -1,6 +1,8 @@
-# Node API Proxy Server
+# Cloud Computing Providers
 
-Server used for hiding API keys, rate limiting and caching. This uses the [OpenWeather API](https://openweathermap.org/api) but you can easily change it to whatever public API you are using
+Plot Cloud computing providers on the map using MapBox.
+
+Rewritten using express from https://github.com/rbiesser/cloud-providers-azure-razor-pages
 
 ## Usage
 
@@ -31,4 +33,24 @@ You can add on any other query params as needed when hitting the /api endpoint s
 - Add new routes as you see fit
 - Change rate limiting and caching to desired values
 
-This project is from this [YouTube tutorial](https://youtu.be/ZGymN8aFsv4)
+This project is forked from this [YouTube tutorial](https://youtu.be/ZGymN8aFsv4)
+
+---
+
+## Mapbox GL JS
+- [Mapbox GL JS API Reference](https://docs.mapbox.com/mapbox-gl-js/api/)
+- [How Mapbox works, web applications](https://docs.mapbox.com/help/how-mapbox-works/web-apps/)
+- Their documentation doesn't describe the functions very well, so use the Help page for descriptions and then the API Reference for details.
+
+## Cloud Providers
+### Microsoft Azure
+- [Azure Regions](https://azure.microsoft.com/en-us/global-infrastructure/regions/)
+- [Azure Documentation](https://docs.microsoft.com/en-us/azure/)
+
+### Amazon AWS
+- [AWS Global Infrastructure](https://aws.amazon.com/about-aws/global-infrastructure/)
+- [AWS Documentation](https://docs.aws.amazon.com/)
+
+### Google Cloud Platform
+- [GCP Global Infrastructure](https://cloud.withgoogle.com/infrastructure)
+- [GCP Documentation](https://cloud.google.com/docs)

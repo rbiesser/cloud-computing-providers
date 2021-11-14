@@ -33,4 +33,6 @@ router.get('/', cache('2 minutes'), async (req, res, next) => {
   }
 })
 
+router.use('/regions', require('./regions'))
+
 module.exports = router
