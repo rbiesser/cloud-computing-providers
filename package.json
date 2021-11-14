@@ -1,13 +1,13 @@
 {
-  "name": "api-proxy-server",
+  "name": "cloud-computing-providers",
   "version": "1.0.0",
-  "description": "Proxy server to hide public API keys with rate limiting, caching",
+  "description": "Map Cloud computing providers.",
   "main": "index.js",
   "scripts": {
     "start": "node index",
     "dev": "nodemon index"
   },
-  "author": "Brad Traversy",
+  "author": "Robbie Biesser",
   "license": "MIT",
   "dependencies": {
     "apicache": "^1.6.2",
@@ -15,6 +15,7 @@
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "express-rate-limit": "^5.5.0",
+    "geojson": "^0.5.0",
     "needle": "^3.0.0"
   },
   "devDependencies": {
