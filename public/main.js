@@ -9,82 +9,86 @@ var map = new mapboxgl.Map({
   zoom: 3,
 });
 
-map.on("load", function () {
-  map.loadImage("/img/logo_azure.png", (error, image) => {
-    if (error) throw error;
-    map.addImage("azure", image);
-    map.addLayer({
-      id: "azure",
-      source: {
-        type: "geojson",
-        data: "/api/regions/azure", // request from GeoJson route on the localhost
-      },
-      type: "symbol",
-      paint: {
-        // Mapbox Style Specification paint properties
-      },
-      layout: {
-        "icon-image": "azure",
-        "icon-size": 0.5,
-        // Mapbox Style Specification layout properties
-        "text-variable-anchor": ["top", "bottom", "left", "right"],
-        "text-radial-offset": 0.5,
-        "text-justify": "auto",
-        "text-field": ["get", "region"],
-        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-        "text-offset": [0, 0.8],
-        "text-anchor": "top",
-      },
-    });
-  });
+// each icon has a different size
+// alternatively use icons with the same size
+const markers = [
+  {
+    name: "azure",
+    url: "/img/logo_azure.png",
+    iconSize: 0.5,
+  },
+  {
+    name: "aws",
+    url: "/img/Amazon_Web_Services_Logo.png",
+    iconSize: 0.14,
+  },
+  {
+    name: "gcp",
+    url: "/img/google-cloud-seeklogo.com.png",
+    iconSize: 0.13,
+  },
+];
 
-  map.loadImage("/img/Amazon_Web_Services_Logo.png", (error, image) => {
-    if (error) throw error;
-    map.addImage("aws", image);
-    map.addLayer({
-      id: "aws",
-      source: {
-        type: "geojson",
-        data: "/api/regions/aws", // request from GeoJson route on the localhost
-      },
-      type: "symbol",
-      paint: {
-        // Mapbox Style Specification paint properties
-      },
-      layout: {
-        "icon-image": "aws",
-        "icon-size": 0.14,
-        // Mapbox Style Specification layout properties
-        "text-field": ["get", "region"],
-        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-        "text-offset": [0, 0.8],
-        "text-anchor": "top",
-      },
-    });
-  });
+// https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/
+var toggleableLayerIds = [];
 
-  map.loadImage("/img/google-cloud-seeklogo.com.png", (error, image) => {
-    if (error) throw error;
-    map.addImage("gcp", image);
-    map.addLayer({
-      id: "gcp",
-      source: {
-        type: "geojson",
-        data: "/api/regions/gcp", // request from GeoJson route on the localhost
-      },
-      type: "symbol",
-      paint: {
-        // Mapbox Style Specification paint properties
-      },
-      layout: {
-        "icon-image": "gcp",
-        "icon-size": 0.13,
-        // Mapbox Style Specification layout properties
-        "text-field": ["get", "region"],
-        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-        "text-offset": [0, 0.8],
-        "text-anchor": "top",
-      },
+map.on("load", () => {
+  markers.forEach((marker) => {
+    toggleableLayerIds.push(marker.name);
+    map.loadImage(marker.url, (error, image) => {
+      if (error) throw error;
+      map.addImage(marker.name, image);
+      map.addLayer({
+        id: marker.name,
+        source: {
+          type: "geojson",
+          data: `/api/regions/${marker.name}`, // request from route
+        },
+        type: "symbol",
+        paint: {
+          // Mapbox Style Specification paint properties
+        },
+        layout: {
+          "icon-image": marker.name,
+          "icon-size": marker.iconSize,
+          // Mapbox Style Specification layout properties
+          // "text-field": ["get", "name"],
+          // "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+          // "text-offset": [0, 0.8],
+          // "text-anchor": "top",
+        },
+      });
+    });
+    // When a click event occurs on a feature in the places layer, open a popup at the
+    // location of the feature, with description HTML from its properties.
+    map.on("click", marker.name, (e) => {
+      // Copy coordinates array.
+      const coordinates = e.features[0].geometry.coordinates.slice();
+      const displayName = e.features[0].properties.displayName;
+
+      const description = `<strong>${displayName}</strong>`;
+
+      // Ensure that if the map is zoomed out such that multiple
+      // copies of the feature are visible, the popup appears
+      // over the copy being pointed to.
+      while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+        coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+      }
+
+      new mapboxgl.Popup()
+        .setLngLat(coordinates)
+        .setHTML(description)
+        .addTo(map);
+    });
+
+    // Change the cursor to a pointer when the mouse is over the places layer.
+    map.on("mouseenter", marker.name, () => {
+      map.getCanvas().style.cursor = "pointer";
+    });
+
+    // Change it back to a pointer when it leaves.
+    map.on("mouseleave", marker.name, () => {
+      map.getCanvas().style.cursor = "";
     });
   });
 
@@ -94,12 +98,7 @@ map.on("load", function () {
     })
   );
 
-  // https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/
-  var toggleableLayerIds = ["azure", "aws", "gcp"];
-
-  for (var i = 0; i < toggleableLayerIds.length; i++) {
-    var id = toggleableLayerIds[i];
-
+  toggleableLayerIds.forEach((id) => {
     var link = document.createElement("a");
     link.href = "#";
     link.className = "active";
@@ -112,7 +111,7 @@ map.on("load", function () {
 
       var visibility = map.getLayoutProperty(clickedLayer, "visibility");
 
-      console.log(visibility);
+      console.log(clickedLayer, visibility);
 
       if (visibility === "visible" || visibility === undefined) {
         map.setLayoutProperty(clickedLayer, "visibility", "none");
@@ -125,7 +124,7 @@ map.on("load", function () {
 
     var layers = document.getElementById("menu");
     layers.appendChild(link);
-  }
+  });
 }); // end on load function
 
 // const weatherDisplay = document.querySelector('.weather')
