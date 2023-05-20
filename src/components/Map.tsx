@@ -33,26 +33,26 @@ function Map({ options }: Props) {
 
     // each icon has a different size
     // alternatively use icons with the same size
-    const markers = [
-      {
-        name: "azure",
-        url: "/img/logo_azure.png",
-        iconSize: 0.5,
-      },
-      {
-        name: "aws",
-        url: "/img/Amazon_Web_Services_Logo.png",
-        iconSize: 0.14,
-      },
-      {
-        name: "gcp",
-        url: "/img/google-cloud-seeklogo.com.png",
-        iconSize: 0.13,
-      },
-    ];
+    // const markers = [
+    //   {
+    //     name: "azure",
+    //     url: "/img/logo_azure.png",
+    //     iconSize: 0.5,
+    //   },
+    //   {
+    //     name: "aws",
+    //     url: "/img/Amazon_Web_Services_Logo.png",
+    //     iconSize: 0.14,
+    //   },
+    //   {
+    //     name: "gcp",
+    //     url: "/img/google-cloud-seeklogo.com.png",
+    //     iconSize: 0.13,
+    //   },
+    // ];
 
     // https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/
-    var toggleableLayerIds: Array<any> = [];
+    // var toggleableLayerIds: Array<any> = [];
 
     // map.on("load", () => {
     //   markers.forEach((marker) => {
