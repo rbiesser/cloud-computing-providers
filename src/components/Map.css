@@ -1,3 +1,16 @@
-.map-container {
+.mapboxgl-map {
   height: 100vh;
+}
+
+.style-selector {
+    position: fixed;
+    z-index: 100;
+    padding: .5rem;
+    margin: 1rem;
+    top: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+    box-shadow:4px 7px 10px rgba(0,0,0,.4);
+    background: white;
 }

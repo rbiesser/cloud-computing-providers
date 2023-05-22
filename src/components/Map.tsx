@@ -1,162 +1,134 @@
-import { useRef, useEffect } from "react";
+import React, { useState } from 'react';
+import MapGL, { Layer, Source, Image, Filter } from '@urbica/react-map-gl';
 import "./Map.css";
-import mapboxgl from "mapbox-gl";
+import { useEffect } from 'react';
+import { featureCollection, providers } from '../data/providers';
 
-mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
+interface MapboxOptions {
+  accessToken: string
+  // TODO: import { StyleSpecification } from "mapbox-gl/src/style-spec/types";
+  // is not in a typescript definition
+  mapStyle: string
+  longitude: number
+  latitude: number
+  zoom: number
+}
 
 interface Props {
-  options: Partial<mapboxgl.MapboxOptions>;
+  options: MapboxOptions
 }
 
-function Map({ options }: Props) {
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxgl.Map>();
+const Map: React.FunctionComponent<Props> = ({ options }) => {
+
+
+  const [viewport, setViewport] = useState({
+    latitude: 37.78,
+    longitude: -122.41,
+    zoom: 11
+  });
+
+  const [position, setPosition] = useState({
+    longitude: 0,
+    latitude: 0
+  });
+
   useEffect(() => {
-    if (!mapboxgl.accessToken) {
-      console.warn(
-        "An API access token is required to use Mapbox GL. See https://docs.mapbox.com/api/overview/#access-tokens-and-token-scopes"
-      );
-      return;
-    }
+    console.log(viewport, position)
+  }, [viewport, position])
 
-    if (mapRef.current) return; // initialize map only once
+  const enum styles {
+    light = 'mapbox://styles/mapbox/light-v10',
+    dark = 'mapbox://styles/mapbox/dark-v10'
+  };
+  const [styleId, setStyleId] = useState<styles>(styles.light);
 
-    // map.current = new mapboxgl.Map({
-    //   container: mapContainerRef?.current ? mapContainerRef.current : "",
-    //   ...options,
-    // })
+  const onMapClick = (event: any) => {
+    console.log(event)
+    setPosition({ longitude: event.lngLat.lng, latitude: event.lngLat.lat });
+    const position = `${event.lngLat.lng}, ${event.lngLat.lat}`
+    console.log(position)
+    navigator.clipboard.writeText(position)
+  };
 
-    const map = new mapboxgl.Map({
-      container: mapContainerRef?.current ? mapContainerRef.current : "",
-      ...options,
-    });
+  const onZoomEnd = (event: any) => {
+    console.log(event.target.getZoom())
+  }
 
-    // each icon has a different size
-    // alternatively use icons with the same size
-    // const markers = [
-    //   {
-    //     name: "azure",
-    //     url: "/img/logo_azure.png",
-    //     iconSize: 0.5,
-    //   },
-    //   {
-    //     name: "aws",
-    //     url: "/img/Amazon_Web_Services_Logo.png",
-    //     iconSize: 0.14,
-    //   },
-    //   {
-    //     name: "gcp",
-    //     url: "/img/google-cloud-seeklogo.com.png",
-    //     iconSize: 0.13,
-    //   },
-    // ];
+  const loadImages = () => {
+    return (
+      <>
 
-    // https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/
-    // var toggleableLayerIds: Array<any> = [];
+        <Image id='azure-image' image={providers[0].url} />
+        <Image id='gcp-image' image={providers[2].url} />
+      </>
+    )
+  }
 
-    // map.on("load", () => {
-    //   markers.forEach((marker) => {
-    //     toggleableLayerIds.push(marker.name);
-    //     map.loadImage(marker.url, (error, image) => {
-    //       if (error) throw error;
-    //       if (!image) return;
-    //       map.addImage(marker.name, image);
-    //       map.addLayer({
-    //         id: marker.name,
-    //         source: {
-    //           type: "geojson",
-    //           data: `/api/regions/${marker.name}`, // request from route
-    //         },
-    //         type: "symbol",
-    //         paint: {
-    //           // Mapbox Style Specification paint properties
-    //         },
-    //         layout: {
-    //           "icon-image": marker.name,
-    //           "icon-size": marker.iconSize,
-    //           // Mapbox Style Specification layout properties
-    //           // "text-field": ["get", "name"],
-    //           // "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-    //           // "text-offset": [0, 0.8],
-    //           // "text-anchor": "top",
-    //         },
-    //       });
-    //     });
-    //     // When a click event occurs on a feature in the places layer, open a popup at the
-    //     // location of the feature, with description HTML from its properties.
-    //     // map.on("click", marker.name, (e) => {
-    //     //   // Copy coordinates array.
-    //     //   const coordinates = e.features?[0].geometry.coordinates.slice();
-    //     //   const displayName = e.features?[0].properties.displayName;
+  useEffect(() => { console.log('render') }, [])
+  return (
+    <>
+      <MapGL
+        mapStyle={styleId}
+        accessToken={options.accessToken}
+        latitude={options.latitude}
+        longitude={options.longitude}
+        zoom={options.zoom}
+        onClick={onMapClick}
+        onViewportChange={setViewport}
+        onZoomend={onZoomEnd}
+      >
+        {loadImages()}
 
-    //     //   const description = `<strong>${displayName}</strong>`;
+        {/* add a source, create a layer containing the source by id */}
+        <Source
+          id='providers'
+          type='geojson'
+          data={featureCollection}
+          cluster={true}
+          clusterMaxZoom={0} // Max zoom to cluster points on
+          clusterRadius={50} // Radius of each cluster when clustering points (defaults to 50) 
+        // clusterMinPoints
+        // clusterProperties
 
-    //     //   // Ensure that if the map is zoomed out such that multiple
-    //     //   // copies of the feature are visible, the popup appears
-    //     //   // over the copy being pointed to.
-    //     //   while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-    //     //     coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-    //     //   }
+        />
+        <Layer
+          id='azure-layer'
+          type='symbol'
+          source='providers'
+          filter={['==', 'provider', 'azure']}
+          layout={{
+            'icon-image': 'azure-image',
+            'icon-size': .25
+          }}
+        />
+        <Layer
+          id='gcp-layer'
+          type='symbol'
+          source='providers'
+          filter={['==', 'provider', 'gcp']}
+          layout={{
+            'icon-image': 'gcp-image',
+            'icon-size': .25
+          }}
+        />
+        <Layer
+          id='clusters'
+          type='circle'
+          source='providers'
+          filter={['has', 'point_count']}
 
-    //     //   new mapboxgl.Popup()
-    //     //     .setLngLat(coordinates)
-    //     //     .setHTML(description)
-    //     //     .addTo(map);
-    //     // });
+        />
 
-    //     // Change the cursor to a pointer when the mouse is over the places layer.
-    //     map.on("mouseenter", marker.name, () => {
-    //       map.getCanvas().style.cursor = "pointer";
-    //     });
+        <Filter layerId='points' filter={['==', 'show', true]} />
 
-    //     // Change it back to a pointer when it leaves.
-    //     map.on("mouseleave", marker.name, () => {
-    //       map.getCanvas().style.cursor = "";
-    //     });
-    //   });
+      </MapGL>
 
-    //   map.addControl(
-    //     new mapboxgl.FullscreenControl({
-    //       container: document.querySelector("body"),
-    //     })
-    //   );
+      <div className='style-selector'>
+        <button onClick={() => setStyleId(styles.light)}>light</button>
+        <button onClick={() => setStyleId(styles.dark)}>dark</button>
 
-    //   // toggleableLayerIds.forEach((id) => {
-    //   //   var link = document.createElement("a");
-    //   //   link.href = "#";
-    //   //   link.className = "active";
-    //   //   link.textContent = id;
-
-    //   //   link.onclick = function (e) {
-    //   //     var clickedLayer = this.textContent;
-    //   //     e.preventDefault();
-    //   //     e.stopPropagation();
-
-    //   //     var visibility = map.getLayoutProperty(clickedLayer, "visibility");
-
-    //   //     console.log(clickedLayer, visibility);
-
-    //   //     if (visibility === "visible" || visibility === undefined) {
-    //   //       map.setLayoutProperty(clickedLayer, "visibility", "none");
-    //   //       this.className = "";
-    //   //     } else {
-    //   //       this.className = "active";
-    //   //       map.setLayoutProperty(clickedLayer, "visibility", "visible");
-    //   //     }
-    //   //   };
-
-    //   //   var layers = document.getElementById("menu");
-    //   //   layers.appendChild(link);
-    //   // });
-    // }); // end on load function
-
-    mapRef.current = map;
-
-    // Clean up on unmount
-    // return () => map.remove();
-  }, [options]);
-
-  return <div className="map-container" ref={mapContainerRef} />;
+      </div>
+    </>
+  )
 }
-
-export default Map;
+export default Map
